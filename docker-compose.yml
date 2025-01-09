@@ -1,0 +1,36 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.8.16-management
+    container_name: "rabbitmq"
+    ports:
+      - "${RABBITMQ_PORT}:${RABBITMQ_PORT}"
+      - "${RABBITMQ_MANAGEMENT_PORT}:${RABBITMQ_MANAGEMENT_PORT}"
+    volumes:
+      - ~/.docker-conf/rabbitmq/data/:/var/lib/rabbitmq/
+      - ~/.docker-conf/rabbitmq/log/:/var/log/rabbitmq
+    env_file: .env
+    networks:
+      - rabbitmq_go_net
+    healthcheck:
+      test: ["CMD", "rabbitmqctl", "status"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 20s
+
+  app:
+    build: .
+    ports:
+      - "${APP_PORT}:${APP_PORT}"
+    env_file: .env
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+    profiles:
+      - production
+    networks:
+      - rabbitmq_go_net
+
+networks:
+  rabbitmq_go_net:
+    driver: bridge
