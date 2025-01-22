@@ -24,10 +24,12 @@ var (
 
 // Payment response queues
 var PaymentResponseQueues = []rabbitmq.QueueWithRoutingKey{
-	{QueueName: "payment_status_report", RoutingKey: "status_report"},
+	{QueueName: "payment_status_reports", RoutingKey: "status_reports"},
+	{QueueName: "payment_refunds", RoutingKey: "refunds"},
 }
 
 // Specific payment response queue
 var (
 	PaymentStatusQueueAndKey = PaymentResponseQueues[0]
+	PaymentRefundQueueAndKey = PaymentResponseQueues[1]
 )

@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"encoding/json"
 
-	"github.com/fredypdp/PPSistema/constant"
-	"github.com/fredypdp/PPSistema/Pacs008XML"
+	// "github.com/fredypdp/PPSistema/constant"
+	// "github.com/fredypdp/PPSistema/Pacs008XML"
 )
 
 // Estrutura para mapear a resposta da AwesomeAPI
@@ -53,41 +53,42 @@ func getExchangeRate(currency string) (float64, error) {
 	return strconv.ParseFloat(rate.Bid, 64)
 }
 
-func taxarPagamento(document Pacs008XML.Document) (Pacs008XML.Document, *Pacs008XML.Document, error) {
-	// Converte o valor original de string para float
-	originalAmt, err := strconv.ParseFloat(document.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Val, 64)
-	if err != nil {
-		return Pacs008XML.Document{}, nil, fmt.Errorf("valor inválido: %v", err)
-	}
+// func taxarPagamento(document Pacs008XML.DocumentPacs008) (Pacs008XML.DocumentPacs008, *Pacs008XML.DocumentPacs008, error) {
+// 	// Converte o valor original de string para float
+// 	originalAmt, err := strconv.ParseFloat(document.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Val, 64)
+// 	if err != nil {
+// 		return Pacs008XML.DocumentPacs008{}, nil, fmt.Errorf("valor inválido: %v", err)
+// 	}
 
-	// Obtém a moeda e busca a taxa de câmbio
-	currency := document.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Ccy
-	rate, err := getExchangeRate(currency)
-	if err != nil {
-		return Pacs008XML.Document{}, nil, err
-	}
+// 	// Obtém a moeda e busca a taxa de câmbio
+// 	currency := document.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Ccy
+// 	rate, err := getExchangeRate(currency)
+// 	if err != nil {
+// 		return Pacs008XML.DocumentPacs008{}, nil, err
+// 	}
 
-	// Converte o valor para dólares
-	amountInUSD := originalAmt / rate
-	if amountInUSD < constant.ValorLimiteParaTaxar {
-		return document, nil, nil // Sem taxa, retorna o documento original e nenhum TaxaPacs008
-	}
+// 	// Converte o valor para dólares
+// 	amountInUSD := originalAmt / rate
+// 	if amountInUSD < constant.ValorMinimoParaTaxar {
+// 		return document, nil, nil // Sem taxa, retorna o documento original e nenhum TaxaPacs008
+// 	}
 
-	// Calcula a taxa e o valor restante
-	valorDaTaxa := originalAmt * constant.TaxaPagamentoNacional
-	valorTaxado := originalAmt - valorDaTaxa
+// 	// Calcula a taxa e o valor restante
+// 	valorDaTaxa := originalAmt * constant.TaxaPagamentoNacional
+// 	valorTaxado := originalAmt - valorDaTaxa
 
-	// Cria uma cópia do documento original para o valor restante
-	UserPacs008 := document
-	UserPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Val = fmt.Sprintf("%.2f", valorTaxado)
+// 	// Cria uma cópia do documento original para o valor restante
+// 	UserPacs008 := document
+// 	UserPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Val = fmt.Sprintf("%.2f", valorTaxado)
 
-	// Cria um novo documento para representar a taxa
-	TaxaPacs008 := document
-	TaxaPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Val = fmt.Sprintf("%.2f", valorDaTaxa)
-	TaxaPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.CdtrAgt.FinInstnId.BICFI = "BICFIBeneficiario"
-	TaxaPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.Cdtr.Nm = "PP"
-	TaxaPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id = "123456789" // ID da conta da empresa
+// 	// Cria um novo documento para representar a taxa
+// 	TaxaPacs008 := document
+// 	TaxaPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Val = fmt.Sprintf("%.2f", valorDaTaxa)
+// 	TaxaPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.CdtrAgt.FinInstnId.BICFI = "BICFIBeneficiario"
+// 	TaxaPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.Cdtr.Nm = "PP"
+// 	TaxaPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id = "+244123456789" // ID da conta da empresa
+// 	TaxaPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf.CdtrAcct.Id.Othr.SchmeNm.Prtry = "PHONE" // Tipo de identificador
 
-	// Retorna os dois documentos
-	return UserPacs008, &TaxaPacs008, nil
-}
+// 	// Retorna os dois documentos
+// 	return UserPacs008, &TaxaPacs008, nil
+// }

@@ -89,9 +89,9 @@ func CreateExchangesAndQueues() error {
 }
 
 func main() {
-	if err := CreateRabbitmqPSPUsers(); err != nil {
-		log.Fatalf("%s", err)
-	}
+	// if err := CreateRabbitmqPSPUsers(); err != nil {
+	// 	log.Fatalf("%s", err)
+	// }
 
 	if err := CreateExchangesAndQueues(); err != nil {
 		log.Fatalf("%s", err)
@@ -101,7 +101,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	// Adiciona ao WaitGroup o número de goroutines que serão iniciadas
-	wg.Add(2)
+	wg.Add(3)
 
 	// Goroutine para consumir pagamentos normais
 	go func() {
@@ -115,6 +115,13 @@ func main() {
 		defer wg.Done()
 		log.Println("Iniciando consumo de relatórios de status")
 		Transactions.ConsumeStatusReports()
+	}()
+
+	// Goroutine para consumir devoluções
+	go func() {
+		defer wg.Done()
+		log.Println("Iniciando consumo de devoluções")
+		Transactions.ConsumeRefunds()
 	}()
 
 	// Espera por todas as goroutines concluírem

@@ -7,49 +7,49 @@ import (
 type DocumentPacs002 struct {
     XMLName xml.Name          `xml:"Document"`
     XMLNS   string            `xml:"xmlns,attr"`
-    FIToFIPmtStsRpt FIToFIPmtStsRpt `xml:"FIToFIPmtStsRpt"`
+    FIToFIPmtStsRpt fiToFIPmtStsRpt `xml:"FIToFIPmtStsRpt"`
 }
 
-type FIToFIPmtStsRpt struct {
-    GrpHdr         GrpHdr         `xml:"GrpHdr"`
-    OrgnlGrpInfAndSts OrgnlGrpInfAndSts `xml:"OrgnlGrpInfAndSts"`
-    TxInfAndSts    TxInfAndSts    `xml:"TxInfAndSts"`
+type fiToFIPmtStsRpt struct {
+    GrpHdr         grpHdr         `xml:"GrpHdr"`
+    OrgnlGrpInfAndSts orgnlGrpInfAndSts `xml:"OrgnlGrpInfAndSts"`
+    TxInfAndSts    []txInfAndSts    `xml:"TxInfAndSts"`
 }
 
-type GrpHdr struct {
+type grpHdr struct {
     MsgId   string `xml:"MsgId"`
     CreDtTm string `xml:"CreDtTm"`
 }
 
-type OrgnlGrpInfAndSts struct {
+type orgnlGrpInfAndSts struct {
     OrgnlMsgId    string `xml:"OrgnlMsgId"`
     OrgnlMsgNmId  string `xml:"OrgnlMsgNmId"`
     OrgnlCreDtTm  string `xml:"OrgnlCreDtTm"`
     GrpSts        string `xml:"GrpSts"`
 }
 
-type TxInfAndSts struct {
+type txInfAndSts struct {
     OrgnlEndToEndId string      `xml:"OrgnlEndToEndId"`
     OrgnlTxId       string      `xml:"OrgnlTxId"`
     TxSts           string      `xml:"TxSts"`
-    InstdAgt        InstdAgt    `xml:"InstdAgt"`
-    OrgnlTxRef      OrgnlTxRef  `xml:"OrgnlTxRef"`
+    InstdAgt        instdAgt    `xml:"InstdAgt"`
+    OrgnlTxRef      orgnlTxRef  `xml:"OrgnlTxRef"`
 }
 
-type InstdAgt struct {
-    FinInstnId FinInstnId `xml:"FinInstnId"`
+type instdAgt struct {
+    FinInstnId finInstnId `xml:"FinInstnId"`
 }
 
-type FinInstnId struct {
+type finInstnId struct {
     BICFI string `xml:"BICFI"`
 }
 
-type OrgnlTxRef struct {
-    IntrBkSttlmAmt IntrBkSttlmAmt `xml:"IntrBkSttlmAmt"`
+type orgnlTxRef struct {
+    IntrBkSttlmAmt intrBkSttlmAmt `xml:"IntrBkSttlmAmt"`
     IntrBkSttlmDt  string         `xml:"IntrBkSttlmDt"`
 }
 
-type IntrBkSttlmAmt struct {
+type intrBkSttlmAmt struct {
     Ccy string `xml:"Ccy,attr"`
     Val string `xml:",chardata"`
 }
