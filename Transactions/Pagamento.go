@@ -7,8 +7,9 @@ import (
     "os"
 
     "github.com/fredypdp/PPSistema/Pacs008XML"
+    "github.com/fredypdp/PPSistema/Pacs002XML"
     "github.com/fredypdp/PPSistema/constant"
-    // "github.com/fredypdp/PPSistema/dipt"
+    "github.com/fredypdp/PPSistema/dipt"
     "github.com/fredypdp/PPSistema/rabbitmq"
     "github.com/joho/godotenv"
     amqp "github.com/rabbitmq/amqp091-go"
@@ -75,42 +76,104 @@ func processarPacs008(dataXML []byte) error {
         return fmt.Errorf("falha ao formatar XML Pacs.008: %v", err)
     }
 
-    for i, _ := range xmlPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf {
-        // // Processar identificadores
-        // tipoIdentificadorPagador := txInf.DbtrAcct.Id.Othr.SchmeNm.Prtry
-        // identPagador := txInf.DbtrAcct.Id.Othr.Id
+    for i, txInf := range xmlPacs008.FIToFICstmrCdtTrf.CdtTrfTxInf {
+        pspPagador, err := dipt.GetPSPAccountByBIC_Swift(txInf.CdtrAgt.FinInstnId.BICFI)
+        if err != nil {
+            errText := fmt.Errorf("erro ao encontrar PSP do remetente %v na transação %d", err, i+1)
+			xml, errXml := Pacs002XML.CreateDocumentResponse(
+				xmlPacs008.FIToFICstmrCdtTrf.GrpHdr.MsgId,
+				"pacs.008.001.08",
+				xmlPacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm,
+				"RJCT",
+				"RJCT",
+				txInf.PmtId.EndToEndId,
+				txInf.PmtId.InstrId,
+				"AM05",
+				txInf.CdtrAgt.FinInstnId.BICFI,
+				txInf.IntrBkSttlmAmt.Ccy,
+				txInf.IntrBkSttlmAmt.Val,
+				[]string{errText.Error()},
+			)
+			if errXml != nil {
+				log.Fatalf("Erro: %v", errXml)
+			}
+
+			fmt.Println(xml)
+			return errText
+        }
     
-        // identificadorPagador, err := pegarIdentificadorPorTipo(identPagador, tipoIdentificadorPagador)
-        // if err != nil {
-        //     return fmt.Errorf("erro ao encontrar identificador do pagador: %v", err)
-        // }
+        if pspPagador == nil {
+            errText := fmt.Errorf("não foi possível encontrar o PSP do remetente %v na transação %d", err, i+1)
+			xml, errXml := Pacs002XML.CreateDocumentResponse(
+				xmlPacs008.FIToFICstmrCdtTrf.GrpHdr.MsgId,
+				"pacs.008.001.08",
+				xmlPacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm,
+				"RJCT",
+				"RJCT",
+				txInf.PmtId.EndToEndId,
+				txInf.PmtId.InstrId,
+				"AM05",
+				txInf.CdtrAgt.FinInstnId.BICFI,
+				txInf.IntrBkSttlmAmt.Ccy,
+				txInf.IntrBkSttlmAmt.Val,
+				[]string{errText.Error()},
+			)
+			if errXml != nil {
+				log.Fatalf("Erro: %v", errXml)
+			}
+
+			fmt.Println(xml)
+			return errText
+        }
     
-        // tipoIdentificadorBeneficiario := txInf.CdtrAcct.Id.Othr.SchmeNm.Prtry
-        // identBeneficiario := txInf.CdtrAcct.Id.Othr.Id
+        pspBeneficiario, err := dipt.GetPSPAccountByBIC_Swift(txInf.DbtrAgt.FinInstnId.BICFI)
+        if err != nil {
+            errText := fmt.Errorf("erro ao encontrar PSP do beneficiário %v na transação %d", err, i+1)
+			xml, errXml := Pacs002XML.CreateDocumentResponse(
+				xmlPacs008.FIToFICstmrCdtTrf.GrpHdr.MsgId,
+				"pacs.008.001.08",
+				xmlPacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm,
+				"RJCT",
+				"RJCT",
+				txInf.PmtId.EndToEndId,
+				txInf.PmtId.InstrId,
+				"AM05",
+				txInf.CdtrAgt.FinInstnId.BICFI,
+				txInf.IntrBkSttlmAmt.Ccy,
+				txInf.IntrBkSttlmAmt.Val,
+				[]string{errText.Error()},
+			)
+			if errXml != nil {
+				log.Fatalf("Erro: %v", errXml)
+			}
+
+			fmt.Println(xml)
+			return errText
+        }
     
-        // identificadorBeneficiario, err := pegarIdentificadorPorTipo(identBeneficiario, tipoIdentificadorBeneficiario)
-        // if err != nil {
-        //     return fmt.Errorf("erro ao encontrar identificador do beneficiário: %v", err)
-        // }
-    
-        // // Buscar PSPs
-        // pspPagador, err := dipt.GetPSPAccountByID(identificadorPagador.PspID)
-        // if err != nil {
-        //     return fmt.Errorf("erro ao encontrar PSP do remetente: %v", err)
-        // }
-    
-        // if pspPagador == nil {
-        //     return fmt.Errorf("não foi possível encontrar o PSP do remetente")
-        // }
-    
-        // pspBeneficiario, err := dipt.GetPSPAccountByID(identificadorBeneficiario.PspID)
-        // if err != nil {
-        //     return fmt.Errorf("erro ao encontrar PSP do beneficiário: %v", err)
-        // }
-    
-        // if pspBeneficiario == nil {
-        //     return fmt.Errorf("não foi possível encontrar o PSP do beneficiário")
-        // }
+        if pspBeneficiario == nil {
+            errText := fmt.Errorf("não foi possível encontrar o PSP do beneficiário %v na transação %d", err, i+1)
+			xml, errXml := Pacs002XML.CreateDocumentResponse(
+				xmlPacs008.FIToFICstmrCdtTrf.GrpHdr.MsgId,
+				"pacs.008.001.08",
+				xmlPacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm,
+				"RJCT",
+				"RJCT",
+				txInf.PmtId.EndToEndId,
+				txInf.PmtId.InstrId,
+				"AM05",
+				txInf.CdtrAgt.FinInstnId.BICFI,
+				txInf.IntrBkSttlmAmt.Ccy,
+				txInf.IntrBkSttlmAmt.Val,
+				[]string{errText.Error()},
+			)
+			if errXml != nil {
+				log.Fatalf("Erro: %v", errXml)
+			}
+
+			fmt.Println(xml)
+			return errText
+        }
     
         log.Printf("transação %d", i+1)
         log.Println(string(dataXML))
